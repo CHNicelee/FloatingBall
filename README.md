@@ -1,16 +1,16 @@
-#Android悬浮球及全局返回功能的实现
-##先来一发效果图：
+# Android悬浮球及全局返回功能的实现
+## 先来一发效果图：
 前面是返回效果，最后一下是实现home键的效果
 ![效果图](http://upload-images.jianshu.io/upload_images/4774781-5da3a469f8adb4dc.gif?imageMogr2/auto-orient/strip)
 
-##前言
+## 前言
 很久之前，就想做一个悬浮球了，毕竟是程序猿嘛，有想要的功能的时候总是想自己尝试一下，于是兴致勃勃的找了好久，都没有找到全局返回功能该如何实现！最后也无疾而终，就在前两天，又想到了这个功能，今天硬是花了好久，从一个同类软件获得了一点灵感，有一个关键的地方被我察觉到了，顺着这个思路找了很多资料，便实现了全局返回功能。
-##思路
+## 思路
 废话不多说了，说说主要的思路吧，关键的一个类就是：`AccessibilityService`，[官方文档地址](https://developer.android.google.cn/reference/android/accessibilityservice/AccessibilityService.html "官方文档地址")，这个类与手机里面的一个功能密切相关：辅助功能-服务。官方文档来看，这个功能是为了方便有障碍的人士更好的使用手机。我们这里就不展开介绍里面的API了，为了实现我们的全局返回功能，我们只需要使用一个函数即可：`boolean performGlobalAction (int action)`,官方解释如下：
 > Performs a global action. Such an action can be performed at any moment regardless of the current application or user location in that application. For example going back, going home, opening recents, etc.
 
 翻译过来就是：
->执行全局动作。无论该应用程序中的当前应用程序或用户位置如何，都可以随时执行此类操作。例如执行HOME键，BACK键,任务键等
+> 执行全局动作。无论该应用程序中的当前应用程序或用户位置如何，都可以随时执行此类操作。例如执行HOME键，BACK键,任务键等
 
 其中可以传入的参数有四个：
 `
@@ -74,7 +74,9 @@ public class MyAccessibilityService extends AccessibilityService {
 </service>
 ```
 其中resource中的内容我们要在xml包中声明，首先新建一个xml包，如下：
+
 ![包结构](http://upload-images.jianshu.io/upload_images/4774781-651671110ba6105e.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
 然后新建一个accessibilityservice.xml文件，内容如下：
 ```
 <?xml version="1.0" encoding="utf-8"?>
@@ -84,14 +86,19 @@ public class MyAccessibilityService extends AccessibilityService {
 ```
 里面还可以设置许多属性，在这里就不介绍了，有兴趣的可以在官方文档里面查看。
 到时候description的显示效果如下：
+
 ![description显示效果](http://upload-images.jianshu.io/upload_images/4774781-c128d092dcc95594.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-好了，到现在就已经完成了AccessibilityService服务的创建与注册了，接下来在Activity中启动服务就可以了: `startService(new Intent(this,MyAccessibilityService.class));`
+
+好了，到现在就已经完成了AccessibilityService服务的创建与注册了，接下来在Activity中启动服务就可以了: `startService(new 
+Intent(this,MyAccessibilityService.class));`
 使用EventBus传递事件即可实现返回:`EventBus.getDefault().post(MyAccessibilityService.BACK);`
 但是要打开服务才行，简单办法是直接调用Intent跳到设置界面：
 `startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));`
 或者手动进入设置->辅助功能->服务->找到自己的app，然后开启服务即可。（不同的系统可能略有差异，小米就是在无障碍里面），界面如下：
+
 ![服务界面](http://upload-images.jianshu.io/upload_images/4774781-ff7d110a4857ca10.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-###悬浮球的简单实现
+
+### 悬浮球的简单实现
 1.自定义一个View，画一个悬浮球：
 ```
 public class FloatingView extends View {
@@ -194,5 +201,5 @@ public class ViewManager {
 然后手动开启权限！不然无法显示悬浮窗。
 最后我们在Activity中开启我们自定义的悬浮窗即可：
 `ViewManager.getInstance(MainActivity.this).showFloatBall();`
-##结束语
+## 结束语
 现在看来，实现一个全局返回功能真的非常简单，但是当初就真的找了非常久，怎么找，怎么试都没法实现这个功能，于是尝试着去学学别的悬浮窗的代码，但是没办法，加壳了，反编译后没法看。但是我注意到了一个细节，它要我打开服务才能使用悬浮窗的功能，所以就从这里下手，慢慢找到了实现全局返回的方法。
